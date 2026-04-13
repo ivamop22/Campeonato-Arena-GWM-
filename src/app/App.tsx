@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Trophy, Users, Zap, TrendingUp, Award, RotateCcw, Play, Check } from 'lucide-react';
+import { Trophy, Users, Zap, TrendingUp, Award, RotateCcw, Play, Check, BarChart3 } from 'lucide-react';
 import { Button } from './components/ui/button';
 import { Input } from './components/ui/input';
 import { Badge } from './components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './components/ui/dialog';
 
 type Player = {
   id: number;
@@ -156,6 +157,16 @@ export default function App() {
     return Array.from(stats.values()).sort((a, b) => b.points - a.points);
   }, [players, matches]);
 
+  const getPlayerMatchCount = (playerId: number): number => {
+    return matches.filter(
+      (m) =>
+        m.team1[0].id === playerId ||
+        m.team1[1].id === playerId ||
+        m.team2[0].id === playerId ||
+        m.team2[1].id === playerId
+    ).length;
+  };
+
   const totalMatches = matches.length;
   const playedMatches = matches.filter((m) => m.played).length;
   const progress = totalMatches > 0 ? (playedMatches / totalMatches) * 100 : 0;
@@ -207,11 +218,11 @@ export default function App() {
           <div className="flex items-center justify-center gap-2 mb-3">
             <Trophy className="w-5 h-5 text-primary" />
             <span className="text-xs font-bold tracking-[0.3em] uppercase text-primary/80">
-              Torneio Americano de Duplas
+              Sistema Americano de Duplas
             </span>
           </div>
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-2">
-            Pelada <span className="text-primary">Beach Tennis</span>
+            Torneio de <span className="text-primary">Beach Tennis</span>
           </h1>
           <div className="text-xl md:text-2xl font-bold tracking-wider text-accent">
             Arena GWM
@@ -366,7 +377,7 @@ export default function App() {
               </motion.div>
 
               {/* Stats Cards */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -413,6 +424,88 @@ export default function App() {
                     Completo
                   </div>
                 </motion.div>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <motion.button
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.3 }}
+                      className="bg-primary/10 border border-primary/30 rounded-xl p-4 text-center hover:bg-primary/20 transition-all cursor-pointer"
+                    >
+                      <div className="flex items-center justify-center mb-1">
+                        <BarChart3 className="w-7 h-7 text-primary" />
+                      </div>
+                      <div className="text-xs font-semibold tracking-wider uppercase text-primary">
+                        Estatísticas
+                      </div>
+                    </motion.button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle className="flex items-center gap-2">
+                        <BarChart3 className="w-5 h-5 text-primary" />
+                        Estatísticas dos Jogadores
+                      </DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-3 mt-4">
+                      {players.map((player, idx) => {
+                        const matchCount = getPlayerMatchCount(player.id);
+                        const stat = playerStats.find((s) => s.player.id === player.id);
+                        return (
+                          <motion.div
+                            key={player.id}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: idx * 0.05 }}
+                            className="bg-muted border border-border rounded-xl p-4"
+                          >
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-full bg-primary text-background flex items-center justify-center text-sm font-bold">
+                                  {idx + 1}
+                                </div>
+                                <div>
+                                  <div className="font-bold text-lg">{player.name}</div>
+                                  <div className="text-xs text-muted-foreground">
+                                    {stat?.wins || 0}V - {stat?.losses || 0}D
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-2xl font-bold text-primary">
+                                  {stat?.points || 0}
+                                </div>
+                                <div className="text-xs text-muted-foreground">pontos</div>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-3 gap-3 pt-3 border-t border-border">
+                              <div className="text-center">
+                                <div className="text-xl font-bold text-foreground">
+                                  {matchCount}
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  Total partidas
+                                </div>
+                              </div>
+                              <div className="text-center">
+                                <div className="text-xl font-bold text-green-500">
+                                  {stat?.matchesPlayed || 0}
+                                </div>
+                                <div className="text-xs text-muted-foreground">Jogadas</div>
+                              </div>
+                              <div className="text-center">
+                                <div className="text-xl font-bold text-orange-500">
+                                  {matchCount - (stat?.matchesPlayed || 0)}
+                                </div>
+                                <div className="text-xs text-muted-foreground">Restantes</div>
+                              </div>
+                            </div>
+                          </motion.div>
+                        );
+                      })}
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </div>
 
               {/* Tabs */}
