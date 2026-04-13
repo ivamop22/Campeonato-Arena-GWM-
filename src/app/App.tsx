@@ -101,8 +101,8 @@ export default function App() {
     setMatches((prev) =>
       prev.map((m) => {
         if (m.id !== matchId) return m;
-        const newScore1 = team === 1 ? Math.max(0, m.score1 + delta) : m.score1;
-        const newScore2 = team === 2 ? Math.max(0, m.score2 + delta) : m.score2;
+        const newScore1 = team === 1 ? Math.max(0, Math.min(4, m.score1 + delta)) : m.score1;
+        const newScore2 = team === 2 ? Math.max(0, Math.min(4, m.score2 + delta)) : m.score2;
         return {
           ...m,
           score1: newScore1,
@@ -188,8 +188,22 @@ export default function App() {
         <motion.header
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12 md:mb-16"
+          className="text-center mb-12 md:mb-16 relative"
         >
+          {/* Beach Tennis Player Image */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2 }}
+            className="absolute top-0 right-4 md:right-8 w-24 h-24 md:w-32 md:h-32 rounded-2xl overflow-hidden border-2 border-primary/20 shadow-lg shadow-primary/10"
+          >
+            <img
+              src="https://images.unsplash.com/photo-1744959475879-2a8d5a9fe418?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
+              alt="Beach Tennis Player"
+              className="w-full h-full object-cover"
+            />
+          </motion.div>
+
           <div className="flex items-center justify-center gap-2 mb-3">
             <Trophy className="w-5 h-5 text-primary" />
             <span className="text-xs font-bold tracking-[0.3em] uppercase text-primary/80">
