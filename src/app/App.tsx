@@ -316,26 +316,38 @@ export default function App() {
           animate={{ opacity: 1, y: 0 }}
           className="text-center mb-12 md:mb-16 relative"
         >
-          {/* Beach Tennis Player Image */}
+          {/* Beach Tennis Player Illustration */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2 }}
-            className="absolute top-0 right-4 md:right-8 w-24 h-24 md:w-32 md:h-32 rounded-2xl overflow-hidden border-2 border-primary/20 shadow-lg shadow-primary/10"
+            initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
+            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+            transition={{ delay: 0.2, type: "spring", stiffness: 100 }}
+            className="absolute -top-4 -right-2 md:top-0 md:right-4 w-32 h-32 md:w-40 md:h-40"
           >
-            <img
-              src="https://images.unsplash.com/photo-1744959475879-2a8d5a9fe418?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400"
-              alt="Beach Tennis Player"
-              className="w-full h-full object-cover"
-            />
+            <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-2xl">
+              {/* Player body */}
+              <circle cx="100" cy="50" r="20" fill="#00D46C" opacity="0.9" />
+              {/* Head */}
+              <circle cx="100" cy="50" r="15" fill="#F5C842" />
+              {/* Body */}
+              <rect x="92" y="65" width="16" height="40" fill="#00D46C" rx="8" />
+              {/* Arms */}
+              <rect x="70" y="70" width="35" height="10" fill="#00D46C" rx="5" transform="rotate(-30 87 75)" />
+              <rect x="95" y="70" width="35" height="10" fill="#00D46C" rx="5" transform="rotate(45 113 75)" />
+              {/* Legs */}
+              <rect x="85" y="100" width="12" height="35" fill="#00D46C" rx="6" transform="rotate(10 91 117)" />
+              <rect x="103" y="100" width="12" height="35" fill="#00D46C" rx="6" transform="rotate(-15 109 117)" />
+              {/* Racket */}
+              <ellipse cx="135" cy="45" rx="18" ry="22" fill="none" stroke="#F5C842" strokeWidth="4" transform="rotate(25 135 45)" />
+              <rect x="125" y="65" width="6" height="30" fill="#8BA898" rx="3" transform="rotate(25 128 80)" />
+              {/* Ball */}
+              <circle cx="160" cy="25" r="8" fill="#FF6C2F">
+                <animate attributeName="cy" values="25;20;25" dur="1s" repeatCount="indefinite" />
+              </circle>
+              {/* Motion lines */}
+              <line x1="145" y1="35" x2="155" y2="30" stroke="#00D46C" strokeWidth="2" opacity="0.5" strokeLinecap="round" />
+              <line x1="143" y1="42" x2="153" y2="37" stroke="#00D46C" strokeWidth="2" opacity="0.4" strokeLinecap="round" />
+            </svg>
           </motion.div>
-
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <Trophy className="w-5 h-5 text-primary" />
-            <span className="text-xs font-bold tracking-[0.3em] uppercase text-primary/80">
-              Sistema Americano de Duplas
-            </span>
-          </div>
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-2">
             Torneio de <span className="text-primary">Beach Tennis</span>
           </h1>
