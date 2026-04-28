@@ -5,3 +5,7 @@ dist
 .env
 .env.local
 .vite
+dist-staging/
+.env.staging
+.env.production
+.env.local
