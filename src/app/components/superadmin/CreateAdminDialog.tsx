@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
 import { supabase } from '../../../lib/supabase'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
@@ -9,11 +8,6 @@ import { Input } from '../ui/input'
 import { Label } from '../ui/label'
 import { toast } from 'sonner'
 
-interface FormData {
-  email: string
-  password: string
-}
-
 interface Props {
   onCreated: () => void
 }
@@ -21,13 +15,22 @@ interface Props {
 export function CreateAdminDialog({ onCreated }: Props) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
-  const { register, handleSubmit, reset, formState: { errors } } = useForm<FormData>()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
 
-  const onSubmit = async (data: FormData) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!email) { setError('Email obrigatório'); return }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setError('Email inválido'); return }
+    if (!password) { setError('Senha obrigatória'); return }
+    if (password.length < 8) { setError('Mínimo 8 caracteres'); return }
+
     setLoading(true)
+    setError(null)
 
     const { data: fnData, error: fnError } = await supabase.functions.invoke('create-admin-user', {
-      body: { email: data.email, password: data.password },
+      body: { email, password },
     })
 
     if (fnError || fnData?.error) {
@@ -36,8 +39,9 @@ export function CreateAdminDialog({ onCreated }: Props) {
       return
     }
 
-    toast.success(`Admin ${data.email} criado com sucesso.`)
-    reset()
+    toast.success(`Admin ${email} criado com sucesso.`)
+    setEmail('')
+    setPassword('')
     setOpen(false)
     onCreated()
     setLoading(false)
@@ -52,34 +56,30 @@ export function CreateAdminDialog({ onCreated }: Props) {
         <DialogHeader>
           <DialogTitle>Criar Admin</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label>Email</Label>
+            <Label htmlFor="admin-email">Email</Label>
             <Input
+              id="admin-email"
               type="email"
               placeholder="admin@email.com"
-              {...register('email', {
-                required: 'Email obrigatório',
-                pattern: {
-                  value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                  message: 'Email inválido',
-                },
-              })}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="off"
             />
-            {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
           </div>
           <div className="space-y-2">
-            <Label>Senha</Label>
+            <Label htmlFor="admin-password">Senha</Label>
             <Input
+              id="admin-password"
               type="password"
               placeholder="mínimo 8 caracteres"
-              {...register('password', {
-                required: 'Senha obrigatória',
-                minLength: { value: 8, message: 'Mínimo 8 caracteres' },
-              })}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="new-password"
             />
-            {errors.password && <p className="text-sm text-red-500">{errors.password.message}</p>}
           </div>
+          {error && <p className="text-sm text-red-500">{error}</p>}
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? 'Criando...' : 'Criar Admin'}
           </Button>

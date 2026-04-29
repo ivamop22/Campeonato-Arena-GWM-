@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
 import { supabase } from '../../../lib/supabase'
 import { useAuth } from '../../../lib/auth'
 import { PlayerAccess } from '../../../lib/database.types'
@@ -10,7 +9,8 @@ import { toast } from 'sonner'
 export function PlayerAccessManager() {
   const { user } = useAuth()
   const [entries, setEntries] = useState<PlayerAccess[]>([])
-  const { register, handleSubmit, reset } = useForm<{ email: string }>()
+  const [email, setEmail] = useState('')
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -22,8 +22,11 @@ export function PlayerAccessManager() {
       .then(({ data }) => setEntries((data as PlayerAccess[]) ?? []))
   }, [user])
 
-  const onSubmit = async ({ email }: { email: string }) => {
-    if (!user) return
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!email.trim() || !user) return
+    setLoading(true)
+
     const { data, error } = await supabase
       .from('player_access')
       .insert({ email: email.toLowerCase().trim(), owner_id: user.id })
@@ -32,11 +35,13 @@ export function PlayerAccessManager() {
 
     if (error) {
       toast.error('Erro: email pode já estar cadastrado.')
+      setLoading(false)
       return
     }
     setEntries((prev) => [data as PlayerAccess, ...prev])
-    reset()
+    setEmail('')
     toast.success('Jogador adicionado.')
+    setLoading(false)
   }
 
   const removeAccess = async (id: string) => {
@@ -51,14 +56,18 @@ export function PlayerAccessManager() {
       <p className="text-xs text-muted-foreground">
         Cadastre o email do jogador. Ele poderá se registrar e ver os torneios em modo somente leitura.
       </p>
-      <form onSubmit={handleSubmit(onSubmit)} className="flex gap-2">
+      <form onSubmit={handleSubmit} className="flex gap-2">
         <Input
+          id="player-email"
           type="email"
           placeholder="jogador@email.com"
-          {...register('email', { required: true })}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           className="flex-1"
         />
-        <Button type="submit" size="sm">Adicionar</Button>
+        <Button type="submit" size="sm" disabled={loading}>
+          {loading ? '...' : 'Adicionar'}
+        </Button>
       </form>
       <div className="space-y-2">
         {entries.map((e) => (

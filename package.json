@@ -4,6 +4,7 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
+    "dev": "vite --port 5173",
     "build": "vite build",
     "build:staging": "vite build --config vite.config.staging.ts",
     "build:prod": "vite build --config vite.config.staging.ts --mode production"

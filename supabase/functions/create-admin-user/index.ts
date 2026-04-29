@@ -19,15 +19,25 @@ Deno.serve(async (req) => {
       })
     }
 
-    // Verifica que o chamador é super_admin
-    const callerClient = createClient(
+    const adminClient = createClient(
       Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      { global: { headers: { Authorization: authHeader } } }
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     )
-    const { data: profile } = await callerClient
+
+    // Verify JWT and get user ID (service_role bypasses RLS — no recursion)
+    const token = authHeader.replace('Bearer ', '')
+    const { data: { user }, error: authError } = await adminClient.auth.getUser(token)
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: 'Token inválido' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    const { data: profile } = await adminClient
       .from('profiles')
       .select('role')
+      .eq('id', user.id)
       .single()
 
     if (profile?.role !== 'super_admin') {
@@ -53,11 +63,6 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
     }
-
-    const adminClient = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    )
 
     // Cria usuário no Auth (email já confirmado)
     const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
